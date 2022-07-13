@@ -100,7 +100,46 @@ namespace tt {
 
 
 
+    template <class T>
+    class SharedPtr {
+    public:
+        explicit SharedPtr(T *ptr) : ptr_(ptr), cnt_(new unsigned int(1)) {}
+        SharedPtr(const SharedPtr<T> &other) : ptr_(other.ptr_), cnt_(other.cnt_) { ++(*cnt_); }
+        SharedPtr<T>& operator=(const SharedPtr &other) {
+            if (this != other) {
+                --(*cnt_);
+                if (*cnt_ == 0) {
+                    delete ptr_;
+                    delete cnt_;
+                }
+                ptr_ = other.ptr_;
+                cnt_ = other.cnt_;
+                ++cnt_;
+            }
+            return *this;
+        }
 
+        ~SharedPtr() {
+            --(*cnt_);
+            if (*cnt_ == 0) {
+                delete cnt_;
+                delete ptr_;
+            }
+        }
+
+
+        T& operator*() {
+            return *ptr_;
+        }
+
+        T* operator->() {
+            return &(*this);
+        }
+
+    private:
+        T               *ptr_;
+        unsigned int    *cnt_;
+    };
 
 
 
